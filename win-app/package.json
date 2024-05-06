@@ -1,0 +1,30 @@
+{
+  "name": "HackerGPT",
+  "version": "2.0.0",
+  "description": "#1 Trusted ethical hacking AI for web and network hacking.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "repository": "https://github.com/alpernae/HackerGPT-2.0",
+  "keywords": [],
+  "author": "https://github.com/alpernae/HackerGPT-2.0",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "electron": "^30.0.2",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.hackergpt.app",
+    "productName": "HackerGPT-2.0 AI",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "ico.ico"
+    }
+  }
+}
