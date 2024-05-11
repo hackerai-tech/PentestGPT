@@ -55,3 +55,10 @@ export function isRestoreableSubscription(
   const subscribedProductId = subscribedProductIds[0] as string
   return restoreProductIds.includes(subscribedProductId)
 }
+
+export function cancelSubscription(
+  stripe: Stripe,
+  subscriptionId: string
+): Promise<Stripe.Subscription> {
+  return stripe.subscriptions.cancel(subscriptionId)
+}
