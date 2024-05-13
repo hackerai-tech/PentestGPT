@@ -21,7 +21,7 @@
     "db-reset": "supabase db reset && npm run db-types",
     "db-migrate": "supabase migration up && npm run db-types",
     "db-types": "supabase gen types typescript --local > supabase/types.ts",
-    "db-pull": "supabase db remote commit",
+    "db-pull": "supabase db pull",
     "db-push": "supabase db push",
     "test": "jest"
   },
