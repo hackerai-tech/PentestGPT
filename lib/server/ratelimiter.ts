@@ -25,15 +25,15 @@ export async function ratelimit(
   userId: string,
   model: string
 ): Promise<RateLimitResult> {
-  const enable = Boolean(
-    process.env.RATELIMITER_ENABLED &&
-      process.env.RATELIMITER_ENABLED.toLowerCase() === "true"
-  )
-  if (!enable) {
+  if (!isRateLimiterEnabled()) {
     return { allowed: true, remaining: -1, timeRemaining: null }
   }
   const isPremium = await isPremiumUser(userId)
   return _ratelimit(model, userId, isPremium)
+}
+
+function isRateLimiterEnabled(): boolean {
+  return process.env.RATELIMITER_ENABLED?.toLowerCase() === "true"
 }
 
 export async function _ratelimit(
@@ -60,23 +60,13 @@ export async function getRemaining(
   isPremium: boolean
 ): Promise<[number, number | null]> {
   const storageKey = _makeStorageKey(userId, model)
-  let timeWindowMinutes
-  if (model === "plugins") {
-    timeWindowMinutes = Number(
-      process.env.RATELIMITER_TIME_PLUGINS_WINDOW_MINUTES
-    )
-  } else {
-    timeWindowMinutes = Number(process.env.RATELIMITER_TIME_WINDOW_MINUTES)
-  }
-  const timeWindow = timeWindowMinutes * 60 * 1000
+  const timeWindow = getTimeWindow(model)
   const now = Date.now()
   const timestamps: number[] = await getRedis().zrange(
     storageKey,
     now - timeWindow,
     now,
-    {
-      byScore: true
-    }
+    { byScore: true }
   )
   const limit = _getLimit(model, isPremium)
   const remaining = limit - timestamps.length
@@ -88,27 +78,41 @@ export async function getRemaining(
   return [remaining, null]
 }
 
+function getTimeWindow(model: string): number {
+  const timeWindowMinutes =
+    model === "plugins"
+      ? Number(process.env.RATELIMITER_TIME_PLUGINS_WINDOW_MINUTES)
+      : Number(process.env.RATELIMITER_TIME_WINDOW_MINUTES)
+  return timeWindowMinutes * 60 * 1000
+}
+
 function _getLimit(model: string, isPremium: boolean): number {
   let limit
   if (model === "plugins" || model === "pluginDetector") {
     const limitKey = `RATELIMITER_LIMIT_${model.toUpperCase()}_${isPremium ? "PREMIUM" : "FREE"}`
-    limit = Number(process.env[limitKey])
-  } else if (model === "tts-1") {
-    const limitKey = `RATELIMITER_LIMIT_TTS_1_${isPremium ? "PREMIUM" : "FREE"}`
-    limit = Number(process.env[limitKey]) || (isPremium ? 30 : 15)
-  } else if (model === "stt-1") {
-    const limitKey = `RATELIMITER_LIMIT_STT_1_${isPremium ? "PREMIUM" : "FREE"}`
-    limit = Number(process.env[limitKey]) || (isPremium ? 60 : 30)
-  } else if (model === "hackergpt-pro") {
-    const limitKey = `RATELIMITER_LIMIT_HACKERGPT_PRO_${isPremium ? "PREMIUM" : "FREE"}`
-    limit = Number(process.env[limitKey]) || (isPremium ? 60 : 0)
-  } else if (model === "gpt-4") {
-    const limitKey = `RATELIMITER_LIMIT_GPT_4_${isPremium ? "PREMIUM" : "FREE"}`
-    limit = Number(process.env[limitKey]) || (isPremium ? 40 : 0)
+    limit =
+      process.env[limitKey] === undefined
+        ? isPremium
+          ? 30
+          : 15
+        : Number(process.env[limitKey])
+  } else if (model === "voice-assistant") {
+    const limitKey = `RATELIMITER_LIMIT_VOICE_ASSISTANT_${isPremium ? "PREMIUM" : "FREE"}`
+    limit =
+      process.env[limitKey] === undefined
+        ? isPremium
+          ? 15
+          : 0
+        : Number(process.env[limitKey])
   } else {
     const fixedModelName = _getFixedModelName(model)
     const limitKey = `RATELIMITER_LIMIT_${fixedModelName}_${isPremium ? "PREMIUM" : "FREE"}`
-    limit = Number(process.env[limitKey])
+    limit =
+      process.env[limitKey] === undefined
+        ? isPremium
+          ? 30
+          : 15
+        : Number(process.env[limitKey])
   }
   if (isNaN(limit) || limit < 0) {
     throw new Error("Invalid limit configuration")
@@ -141,7 +145,7 @@ function _getFixedModelName(model: string): string {
 
 function _makeStorageKey(userId: string, model: string): string {
   const fixedModelName = _getFixedModelName(model)
-  return "ratelimit:" + userId + ":" + fixedModelName
+  return `ratelimit:${userId}:${fixedModelName}`
 }
 
 export function resetRateLimit(model: string, userId: string) {
@@ -200,6 +204,17 @@ export function getRateLimitErrorMessage(
     }
 
     return message.trim()
+  } else if (model === "voice-assistant") {
+    let message = `
+  ⚠️ You've reached the rate limit for voice assistant.
+⏰ Access will be restored in ${remainingText}.`
+
+    if (!premium) {
+      message += `
+🚀 Consider upgrading for higher limits and more features.`
+    }
+
+    return message.trim()
   }
 
   let message = `
@@ -236,13 +251,11 @@ export async function checkRatelimitOnApi(
   )
   const response = new Response(
     JSON.stringify({
-      message: message,
+      message,
       remaining: result.remaining,
       timeRemaining: result.timeRemaining
     }),
-    {
-      status: 429
-    }
+    { status: 429 }
   )
   return { response, result }
 }
