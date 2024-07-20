@@ -21,6 +21,20 @@ export async function getCustomersByEmail(
   return searchResult.data.filter(c => !c.deleted)
 }
 
+export async function cancelSubscription(
+  stripe: Stripe,
+  subscriptionId: string
+): Promise<Stripe.Subscription> {
+  try {
+    const canceledSubscription =
+      await stripe.subscriptions.cancel(subscriptionId)
+    return canceledSubscription
+  } catch (error) {
+    console.error("Error canceling subscription:", error)
+    throw new Error("Failed to cancel subscription")
+  }
+}
+
 export async function getActiveSubscriptions(
   stripe: Stripe,
   customerId: string
