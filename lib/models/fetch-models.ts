@@ -3,21 +3,18 @@ import { LLM_LIST_MAP } from "./llm/llm-list"
 
 export const fetchHostedModels = async () => {
   try {
-    const providers = ["openai", "mistral"]
-
-    const response = await fetch("/api/keys")
-
-    if (!response.ok) {
-      throw new Error(`Server is not responding.`)
+    const isUsingEnvKeyMap = {
+      openai: true,
+      mistral: true,
+      openrouter: true,
+      openai_organization_id: false
     }
-
-    const data = await response.json()
 
     let modelsToAdd: LLM[] = []
 
-    for (const provider of providers) {
-      if (data.isUsingEnvKeyMap[provider]) {
-        const models = LLM_LIST_MAP[provider]
+    for (const provider in isUsingEnvKeyMap) {
+      if (isUsingEnvKeyMap[provider as keyof typeof isUsingEnvKeyMap]) {
+        const models = LLM_LIST_MAP[provider as keyof typeof LLM_LIST_MAP]
 
         if (Array.isArray(models)) {
           modelsToAdd.push(...models)
@@ -26,7 +23,7 @@ export const fetchHostedModels = async () => {
     }
 
     return {
-      envKeyMap: data.isUsingEnvKeyMap,
+      envKeyMap: isUsingEnvKeyMap,
       hostedModels: modelsToAdd
     }
   } catch (error) {
