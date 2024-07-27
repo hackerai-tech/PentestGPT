@@ -1,6 +1,6 @@
 # Contributing Guidelines
 
-**Welcome to HackerGPT!**
+**Welcome to PentestGPT!**
 
 We appreciate your interest in contributing to our project.
 
@@ -22,8 +22,8 @@ We welcome the following types of contributions:
 To get started, fork the project on GitHub and clone it locally on your machine. Then, create a new branch to work on your changes.
 
 ```bash
-git clone https://github.com/Hacker-GPT/HackerGPT-2.0.git
-cd HackerGPT-2.0
+git clone https://github.com/hackerai-tech/PentestGPT
+cd PentestGPT
 git checkout -b my-branch-name
 
 ```
@@ -50,4 +50,4 @@ npm run clean
 
 ## Contact
 
-You can get in touch with us through email at [contact@hackerai.co](mailto:contact@hackerai.co) or connect with us on [X](https://twitter.com/thehackergpt).
+You can get in touch with us through email at [contact@hackerai.co](mailto:contact@hackerai.co) or connect with us on [X](https://x.com/PentestGPT).
