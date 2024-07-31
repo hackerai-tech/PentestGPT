@@ -1,4 +1,4 @@
-import { ChatbotUIContext } from "@/context/context"
+import { PentestGPTContext } from "@/context/context"
 import { FC, useContext } from "react"
 import { usePromptAndCommand } from "./chat-hooks/use-prompt-and-command"
 import { FilePicker } from "./file-picker"
@@ -13,7 +13,7 @@ export const ChatCommandInput: FC<ChatCommandInputProps> = ({}) => {
     setIsAtPickerOpen,
     atCommand,
     focusFile
-  } = useContext(ChatbotUIContext)
+  } = useContext(PentestGPTContext)
 
   const { handleSelectUserFile } = usePromptAndCommand()
 

@@ -1,4 +1,4 @@
-import { ChatbotUIContext } from "@/context/context"
+import { PentestGPTContext } from "@/context/context"
 import { ContentType } from "@/types"
 import { FC, useContext } from "react"
 import { SIDEBAR_WIDTH } from "../ui/dashboard"
@@ -11,7 +11,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: FC<SidebarProps> = ({ contentType, showSidebar }) => {
-  const { chats, files } = useContext(ChatbotUIContext)
+  const { chats, files } = useContext(PentestGPTContext)
 
   const renderSidebarContent = (contentType: ContentType, data: any[]) => {
     return <SidebarContent contentType={contentType} data={data} />
