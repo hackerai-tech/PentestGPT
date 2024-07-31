@@ -1,4 +1,4 @@
-import { ChatbotUIContext } from "@/context/context"
+import { PentestGPTContext } from "@/context/context"
 import { Tables } from "@/supabase/types"
 import { useContext } from "react"
 
@@ -14,7 +14,7 @@ export const usePromptAndCommand = () => {
     setAtCommand,
     setUseRetrieval,
     setToolCommand
-  } = useContext(ChatbotUIContext)
+  } = useContext(PentestGPTContext)
 
   const handleInputChange = (value: string) => {
     const slashTextRegex = /\/([^ ]*)$/

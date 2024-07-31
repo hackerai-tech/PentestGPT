@@ -1,4 +1,4 @@
-import { ChatbotUIContext } from "@/context/context"
+import { PentestGPTContext } from "@/context/context"
 import { Tables } from "@/supabase/types"
 import { IconBooks } from "@tabler/icons-react"
 import { FC, useContext, useEffect, useRef } from "react"
@@ -21,7 +21,7 @@ export const FilePicker: FC<FilePickerProps> = ({
   onSelectFile,
   isFocused
 }) => {
-  const { files, setIsAtPickerOpen } = useContext(ChatbotUIContext)
+  const { files, setIsAtPickerOpen } = useContext(PentestGPTContext)
 
   const itemsRef = useRef<(HTMLDivElement | null)[]>([])
 

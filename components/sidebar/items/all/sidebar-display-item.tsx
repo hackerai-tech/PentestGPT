@@ -1,4 +1,4 @@
-import { ChatbotUIContext } from "@/context/context"
+import { PentestGPTContext } from "@/context/context"
 import { cn } from "@/lib/utils"
 import { ContentType, DataItemType } from "@/types"
 import { useRouter } from "next/navigation"
@@ -22,7 +22,7 @@ export const SidebarItem: FC<SidebarItemProps> = ({
   icon,
   isTyping
 }) => {
-  const { selectedWorkspace, setChats } = useContext(ChatbotUIContext)
+  const { selectedWorkspace, setChats } = useContext(PentestGPTContext)
 
   const router = useRouter()
 
