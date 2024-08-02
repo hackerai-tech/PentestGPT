@@ -3,16 +3,22 @@ import { DialogPanel, DialogTitle } from "@headlessui/react"
 import { Button } from "../ui/button"
 import { TransitionedDialog } from "../ui/transitioned-dialog"
 
-interface DeleteAllChatsDialogProps {
+interface DeleteDialogProps {
   isOpen: boolean
   onClose: () => void
   onConfirm: () => void
+  title: string
+  message: string
+  confirmButtonText?: string
 }
 
-export const DeleteAllChatsDialog: FC<DeleteAllChatsDialogProps> = ({
+export const DeleteDialog: FC<DeleteDialogProps> = ({
   isOpen,
   onClose,
-  onConfirm
+  onConfirm,
+  title,
+  message,
+  confirmButtonText = "Delete"
 }) => {
   return (
     <TransitionedDialog isOpen={isOpen} onClose={onClose}>
@@ -21,19 +27,16 @@ export const DeleteAllChatsDialog: FC<DeleteAllChatsDialogProps> = ({
           as="h3"
           className="text-center text-lg font-medium leading-6"
         >
-          Delete All Chats
+          {title}
         </DialogTitle>
         <div className="mt-2">
-          <p className="text-center text-sm">
-            Are you sure you want to delete all chats? This action cannot be
-            undone.
-          </p>
+          <p className="text-center text-sm">{message}</p>
         </div>
 
         <div className="mt-4 flex justify-center space-x-4">
           <Button onClick={onClose}>Cancel</Button>
           <Button variant="destructive" onClick={onConfirm}>
-            Delete All
+            {confirmButtonText}
           </Button>
         </div>
       </DialogPanel>
