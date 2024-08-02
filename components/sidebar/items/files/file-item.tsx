@@ -2,7 +2,7 @@ import { FileIcon } from "@/components/ui/file-icon"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { FILE_DESCRIPTION_MAX, FILE_NAME_MAX } from "@/db/limits"
-import { getFileFromStorage } from "@/db/storage/files"
+// import { getFileFromStorage } from "@/db/storage/files"
 import { Tables } from "@/supabase/types"
 import { FC, useState } from "react"
 import { SidebarItem } from "../all/sidebar-display-item"
@@ -16,10 +16,10 @@ export const FileItem: FC<FileItemProps> = ({ file }) => {
   const [isTyping, setIsTyping] = useState(false)
   const [description, setDescription] = useState(file.description)
 
-  const getLinkAndView = async () => {
-    const link = await getFileFromStorage(file.file_path)
-    window.open(link, "_blank")
-  }
+  // const getLinkAndView = async () => {
+  //   const link = await getFileFromStorage(file.file_path)
+  //   window.open(link, "_blank")
+  // }
 
   return (
     <SidebarItem
@@ -30,12 +30,12 @@ export const FileItem: FC<FileItemProps> = ({ file }) => {
       updateState={{ name }}
       renderInputs={() => (
         <>
-          <div
+          {/* <div
             className="cursor-pointer underline hover:opacity-50"
             onClick={getLinkAndView}
           >
             View {file.name}
-          </div>
+          </div> */}
 
           <div className="flex flex-col justify-between">
             <div>{file.type}</div>
