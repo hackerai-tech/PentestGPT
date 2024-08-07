@@ -30,7 +30,6 @@ export enum PluginID {
   NUCLEI = "nuclei",
   SUBFINDER = "subfinder",
   KATANA = "katana",
-  HTTPX = "httpx",
   WEB_SEARCH = "websearch",
   ENHANCED_SEARCH = "enhancedsearch",
   PLUGINS_STORE = "pluginselector",
@@ -58,7 +57,6 @@ export const pluginUrls: PluginUrls = {
   SUBFINDER: "https://github.com/projectdiscovery/subfinder",
   NUCLEI: "https://github.com/projectdiscovery/nuclei",
   KATANA: "https://github.com/projectdiscovery/katana",
-  HTTPX: "https://github.com/projectdiscovery/httpx",
   // Tools
   PORTSCANNER: "https://github.com/projectdiscovery/naabu",
   LINKFINDER: "https://github.com/0xsha/GoLinkFinder",
