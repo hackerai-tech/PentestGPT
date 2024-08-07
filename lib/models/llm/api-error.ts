@@ -119,4 +119,14 @@ export function handleErrorResponse(error: any) {
   } else {
     console.error(`An unknown error occurred: ${error}`)
   }
+
+  return new Response(
+    JSON.stringify({
+      message:
+        error instanceof APIError ? error.message : "An unknown error occurred"
+    }),
+    {
+      status: error instanceof APIError ? error.code : 500
+    }
+  )
 }

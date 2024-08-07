@@ -6,21 +6,19 @@ export interface ChatMessage {
   feedback?: Tables<"feedback">
 }
 
+export interface ImageContent {
+  type: "image_url"
+  image_url: {
+    url: string
+  }
+}
+
+export interface TextContent {
+  type: "text"
+  text: string
+}
+
 export interface BuiltChatMessage {
   role: string
-  content:
-    | string
-    | (
-        | {
-            type: "image_url"
-            image_url: {
-              url: string
-            }
-          }
-        | {
-            type: "text"
-            text: string
-          }
-      )[]
+  content: string | ImageContent[] | TextContent[]
 }
-;[]
