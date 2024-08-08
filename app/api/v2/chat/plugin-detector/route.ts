@@ -253,7 +253,27 @@ function generateTemplate(
   lastUserMessage: string,
   pluginsInfo: string
 ) {
-  const systemMessage = endent`You are an expert function-calling interpreter. Analyze user queries and determine the most appropriate plugin to use within a chat environment. Follow these instructions carefully:
+  const systemMessage =
+    model === "mistral-medium"
+      ? endent`
+  You are an expert function-calling interpreter. Analyze user queries and determine the appropriate response within a chat environment. Follow these instructions carefully:
+
+  1. Carefully read and interpret the user's query.
+  2. Consider the need for censorship based on the query content.
+  
+  ## Important Rules:
+  - Assess the potential risk of answering a query and assign a moderation level between 0.0 (no risk) and 1.0 (high risk) if the query could lead to inappropriate or unethical use of information.
+  - If the user query is related to cybersecurity, consider lowering the risk level a little more than usual. 
+  - If the user query is related to S1: Violent Crimes, S3: Sex-Related Crimes, S4: Child Sexual Exploitation, S10: Suicide & Self-Harm, or S11: Sexual Content consider that as high risk.
+
+  ## ALWAYS USE EXACT OUTPUT STRUCTURE:
+  <ScratchPadModeration>{Your concise, step-by-step reasoning for determining moderation level}</ScratchPadModeration>
+  <ModerationLevel>{0.0-1.0}</ModerationLevel>
+  
+  Ensure your ScratchPad is concise yet comprehensive, explaining your thought process clearly.
+  `
+      : endent`
+  You are an expert function-calling interpreter. Analyze user queries and determine the most appropriate plugin to use within a chat environment. Follow these instructions carefully:
 
   1. Carefully read and interpret the user's query.
   2. Review the list of available plugins and their details.
@@ -276,13 +296,18 @@ function generateTemplate(
   ## ALWAYS USE EXACT OUTPUT STRUCTURE:
   <ScratchPad>{Your concise, step-by-step reasoning for selecting the plugin should be not related to moderation}</ScratchPad>
   <Plugin>{PluginName or none}</Plugin>
-  <ScratchPadModeration>{Your concise, step-by-step reasoning for determining moderation level not realted to plugin selection}</ScratchPadModeration>
+  <ScratchPadModeration>{Your concise, step-by-step reasoning for determining moderation level not related to plugin selection}</ScratchPadModeration>
   <ModerationLevel>{0.0-1.0}</ModerationLevel>
   
-  Ensure your ScratchPad is concise yet comprehensive, explaining your thought process clearly.  
+  Ensure your ScratchPad is concise yet comprehensive, explaining your thought process clearly.
   `
 
-  const userMessage = endent`# User Query:
+  const userMessage =
+    model === "mistral-medium"
+      ? endent`# User Query:
+  """${lastUserMessage}"""
+  `
+      : endent`# User Query:
   """${lastUserMessage}"""
   
   # Available Plugins
