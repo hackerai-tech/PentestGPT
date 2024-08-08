@@ -30,7 +30,6 @@ export enum PluginID {
   NUCLEI = "nuclei",
   SUBFINDER = "subfinder",
   KATANA = "katana",
-  WEB_SEARCH = "websearch",
   ENHANCED_SEARCH = "enhancedsearch",
   PLUGINS_STORE = "pluginselector",
   // Tools
@@ -40,7 +39,10 @@ export enum PluginID {
   SQLIEXPLOITER = "sqliexploiter",
   WHOIS = "whois",
   WAFDETECTOR = "wafdetector",
-  DNSSCANNER = "dnsscanner"
+  DNSSCANNER = "dnsscanner",
+  // Default tools
+  WEB_SEARCH = "websearch",
+  CODE_INTERPRETER = "codeinterpreter"
 }
 
 export const Plugins: Record<PluginID, Plugin> = Object.fromEntries(

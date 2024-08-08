@@ -390,7 +390,8 @@ export const useChatHandler = () => {
           fullText,
           finishReason,
           ragUsed: ragUsedFromResponse,
-          ragId: ragIdFromResponse
+          ragId: ragIdFromResponse,
+          selectedPlugin: updatedSelectedPlugin
         } = await handleHostedChat(
           payload,
           modelData!,
@@ -412,6 +413,7 @@ export const useChatHandler = () => {
         finishReasonFromResponse = finishReason
         ragUsed = ragUsedFromResponse
         ragId = ragIdFromResponse
+        selectedPlugin = updatedSelectedPlugin
       }
 
       if (!currentChat) {
