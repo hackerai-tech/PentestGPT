@@ -13,7 +13,8 @@ import {
   IconFileFilled,
   IconFileText,
   IconFileTypePdf,
-  IconDatabaseSearch
+  IconDatabaseSearch,
+  IconCode
 } from "@tabler/icons-react"
 import Image from "next/image"
 import { FC, useContext, useEffect, useRef, useState } from "react"
@@ -25,6 +26,7 @@ import { MessageActions } from "./message-actions"
 import MessageDetailedFeedback from "./message-detailed-feedback"
 import { MessageQuickFeedback } from "./message-quick-feedback"
 import { MessageTypeResolver } from "./message-type-solver"
+import { PluginID } from "@/types/plugins"
 
 const ICON_SIZE = 28
 
@@ -257,7 +259,7 @@ export const Message: FC<MessageProps> = ({
                           <div>Searching files...</div>
                         </div>
                       )
-                    case "websearch":
+                    case PluginID.WEB_SEARCH:
                       return (
                         <div className="flex animate-pulse items-center space-x-2">
                           <IconWorld size={20} />
@@ -271,6 +273,14 @@ export const Message: FC<MessageProps> = ({
                           <IconDatabaseSearch size={20} />
 
                           <div>Using Enhanced Search...</div>
+                        </div>
+                      )
+                    case PluginID.CODE_INTERPRETER:
+                      return (
+                        <div className="flex animate-pulse items-center space-x-2">
+                          <IconCode size={20} />
+
+                          <div>Using Code Interpreter...</div>
                         </div>
                       )
                     default:
@@ -329,6 +339,7 @@ export const Message: FC<MessageProps> = ({
                   message={message}
                   messageSizeLimit={messageSizeLimit}
                   isLastMessage={isLast}
+                  toolInUse={toolInUse}
                 />
               </div>
             )}

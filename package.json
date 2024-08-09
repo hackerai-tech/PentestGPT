@@ -29,6 +29,7 @@
     "@ai-sdk/mistral": "^0.0.28",
     "@ai-sdk/openai": "^0.0.42",
     "@apidevtools/json-schema-ref-parser": "^11.6.4",
+    "@e2b/code-interpreter": "^0.0.9-beta.3",
     "@headlessui/react": "^2.1.2",
     "@hookform/resolvers": "^3.9.0",
     "@langchain/openai": "^0.2.5",

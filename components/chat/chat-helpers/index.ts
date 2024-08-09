@@ -155,7 +155,7 @@ export const handleHostedChat = async (
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
   setToolInUse: React.Dispatch<React.SetStateAction<string>>,
   alertDispatch: React.Dispatch<AlertAction>,
-  selectedPlugin: PluginID | null,
+  selectedPlugin: PluginID,
   detectedModerationLevel: number
 ) => {
   const { provider } = modelData
@@ -209,7 +209,8 @@ export const handleHostedChat = async (
     setToolInUse,
     requestBody,
     setIsGenerating,
-    alertDispatch
+    alertDispatch,
+    selectedPlugin
   )
 }
 
@@ -316,7 +317,8 @@ export const processResponse = async (
   setToolInUse: React.Dispatch<React.SetStateAction<string>>,
   requestBody: object,
   setIsGenerating: React.Dispatch<React.SetStateAction<boolean>>,
-  alertDispatch: React.Dispatch<AlertAction>
+  alertDispatch: React.Dispatch<AlertAction>,
+  selectedPlugin: PluginID
 ) => {
   if (!response.ok) {
     const result = await response.json()
@@ -354,8 +356,10 @@ export const processResponse = async (
   if (response.body) {
     let fullText = ""
     let finishReason = ""
+    let toolCallId = ""
     let ragUsed = false
     let ragId = null
+    let updatedPlugin = selectedPlugin
 
     const reader = response.body.getReader()
     const stream = readDataStream(reader, {
@@ -364,9 +368,41 @@ export const processResponse = async (
 
     try {
       for await (const streamPart of stream) {
-        if (streamPart.type === "text") {
+        // console.log(streamPart)
+
+        const runtPythonCheck =
+          streamPart.type === "tool_call_delta" &&
+          streamPart.value.toolCallId === toolCallId
+
+        const pythonResultCheck =
+          streamPart.type === "tool_result" &&
+          streamPart.value.toolCallId === toolCallId
+
+        if (
+          streamPart.type === "text" ||
+          runtPythonCheck ||
+          pythonResultCheck
+        ) {
           setFirstTokenReceived(true)
-          fullText += streamPart.value
+          let streamText = ""
+
+          if (streamPart.type === "text") {
+            streamText = streamPart.value
+          } else if (runtPythonCheck) {
+            streamText = streamPart.value.argsTextDelta
+          } else if (pythonResultCheck) {
+            const { result } = streamPart.value
+            const { results, runtimeError } = result
+
+            if (results) {
+              streamText = `<results>${results}</results>`
+            }
+            if (runtimeError) {
+              streamText = `<runtimeError>${runtimeError}</runtimeError>`
+            }
+          }
+
+          fullText += streamText
           setChatMessages(prev =>
             prev.map(chatMessage => {
               if (chatMessage.message.id === lastChatMessage.message.id) {
@@ -374,49 +410,64 @@ export const processResponse = async (
                   ...chatMessage,
                   message: {
                     ...chatMessage.message,
-                    content: chatMessage.message.content + streamPart.value
+                    content: chatMessage.message.content + streamText
                   }
                 }
               }
               return chatMessage
             })
           )
+          // Handle custom stream data
         } else if (streamPart.type === "data") {
           const [dataValue] = streamPart.value
-          if (dataValue && typeof dataValue === "object") {
-            ragUsed =
-              "ragUsed" in dataValue ? Boolean(dataValue.ragUsed) : ragUsed
-            if ("ragId" in dataValue) {
-              ragId = dataValue.ragId !== null ? String(dataValue.ragId) : null
-            }
+          // Process RAG data if present
+          if (
+            dataValue &&
+            typeof dataValue === "object" &&
+            "ragUsed" in dataValue
+          ) {
+            ragUsed = Boolean(dataValue.ragUsed)
+            ragId = dataValue.ragId !== null ? String(dataValue.ragId) : null
           }
-        } else if (streamPart.type === "tool_call") {
-          if (streamPart.value.toolName === "webSearch") {
-            setToolInUse("websearch")
+          // Handle tool calls and plugin-specific actions
+        } else if (streamPart.type === "tool_call_streaming_start") {
+          const { toolName } = streamPart.value
 
-            const webSearchResponse = await fetchChatResponse(
-              "/api/v3/chat/plugins/web-search",
-              requestBody,
-              true,
-              controller,
-              setIsGenerating,
-              setChatMessages,
-              alertDispatch
-            )
+          switch (toolName) {
+            case "webSearch":
+              setToolInUse(PluginID.WEB_SEARCH)
+              updatedPlugin = PluginID.WEB_SEARCH
 
-            const webSearchResult = await processResponse(
-              webSearchResponse,
-              lastChatMessage,
-              controller,
-              setFirstTokenReceived,
-              setChatMessages,
-              setToolInUse,
-              requestBody,
-              setIsGenerating,
-              alertDispatch
-            )
+              const webSearchResponse = await fetchChatResponse(
+                "/api/v3/chat/plugins/web-search",
+                requestBody,
+                true,
+                controller,
+                setIsGenerating,
+                setChatMessages,
+                alertDispatch
+              )
 
-            fullText += webSearchResult.fullText
+              const webSearchResult = await processResponse(
+                webSearchResponse,
+                lastChatMessage,
+                controller,
+                setFirstTokenReceived,
+                setChatMessages,
+                setToolInUse,
+                requestBody,
+                setIsGenerating,
+                alertDispatch,
+                updatedPlugin
+              )
+
+              fullText += webSearchResult.fullText
+              break
+            case "runPython":
+              setToolInUse(PluginID.CODE_INTERPRETER)
+              toolCallId = streamPart.value.toolCallId
+              updatedPlugin = PluginID.CODE_INTERPRETER
+              break
           }
         } else if (streamPart.type === "finish_message") {
           finishReason = streamPart.value.finishReason
@@ -435,7 +486,13 @@ export const processResponse = async (
       setToolInUse("none")
     }
 
-    return { fullText, finishReason, ragUsed, ragId }
+    return {
+      fullText,
+      finishReason,
+      ragUsed,
+      ragId,
+      selectedPlugin: updatedPlugin
+    }
   } else {
     throw new Error("Response body is null")
   }

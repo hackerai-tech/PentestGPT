@@ -11,8 +11,9 @@ import {
 import llmConfig from "@/lib/models/llm/llm-config"
 import { checkRatelimitOnApi } from "@/lib/server/ratelimiter"
 import { getAIProfile } from "@/lib/server/server-chat-helpers"
+import { executeCode } from "@/lib/tools/code-interpreter-utils"
 import { createOpenAI } from "@ai-sdk/openai"
-import { streamText } from "ai"
+import { streamText, tool } from "ai"
 import { ServerRuntime } from "next"
 import { z } from "zod"
 
@@ -50,6 +51,8 @@ export async function POST(request: Request) {
       return rateLimitCheckResult.response
     }
 
+    const userID = profile.user_id
+
     const cleanedMessages = await buildFinalMessages(
       payload,
       profile,
@@ -68,6 +71,8 @@ export async function POST(request: Request) {
       apiKey: llmConfig.openai.apiKey
     })
 
+    let hasExecutedCode = false
+
     const result = await streamText({
       model: openai("gpt-4o-2024-08-06"),
       temperature: 0.4,
@@ -80,8 +85,35 @@ export async function POST(request: Request) {
         webSearch: {
           description: "Search the web for latest information",
           parameters: z.object({ search: z.boolean() })
-        }
-      }
+        },
+        runPython: tool({
+          description: "Runs Python code.",
+          parameters: z.object({
+            code: z
+              .string()
+              .describe("The python code to execute in a single cell.")
+          }),
+          async execute({ code }) {
+            if (hasExecutedCode) {
+              return {
+                results:
+                  "Code execution skipped. Only one code cell can be executed per request.",
+                runtimeError: null
+              }
+            }
+
+            hasExecutedCode = true
+            const execOutput = await executeCode(userID, code)
+            const { results, error: runtimeError } = execOutput
+
+            return {
+              results,
+              runtimeError
+            }
+          }
+        })
+      },
+      toolChoice: "auto"
     })
 
     return result.toDataStreamResponse()

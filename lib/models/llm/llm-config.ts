@@ -1,7 +1,6 @@
 import {
   getPentestGPTInfo,
   getPentestGPTSystemPromptEnding,
-  // getPentestGPTImageSpecifcInfo,
   getPentestGPTToolsInfo
 } from "./llm-prompting"
 

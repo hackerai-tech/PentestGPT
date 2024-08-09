@@ -3,12 +3,14 @@ import { PluginID } from "@/types/plugins"
 import { FC } from "react"
 import { MessageMarkdown } from "./message-markdown"
 import { MessagePluginFile } from "./message-plugin-file"
+import { MessageCodeInterpreter } from "./message-code-interpreter"
 
 interface MessageTypeResolverProps {
   message: Tables<"messages">
   previousMessage: Tables<"messages"> | undefined
   messageSizeLimit: number
   isLastMessage: boolean
+  toolInUse: string
 }
 
 const extractOutputFilename = (content: string) => {
@@ -23,7 +25,8 @@ export const MessageTypeResolver: FC<MessageTypeResolverProps> = ({
   previousMessage,
   message,
   messageSizeLimit,
-  isLastMessage
+  isLastMessage,
+  toolInUse
 }) => {
   const isPluginOutput =
     message.plugin !== null &&
@@ -35,6 +38,19 @@ export const MessageTypeResolver: FC<MessageTypeResolverProps> = ({
   //   plugin: message.plugin,
   //   role: message.role
   // })
+
+  if (
+    (isPluginOutput &&
+      message.plugin === PluginID.CODE_INTERPRETER.toString()) ||
+    toolInUse === PluginID.CODE_INTERPRETER
+  ) {
+    return (
+      <MessageCodeInterpreter
+        content={message.content}
+        messageId={message.id}
+      />
+    )
+  }
 
   // If the previous message is a plugin command and the current message is the output
   if (
